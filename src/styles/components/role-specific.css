@@ -1,0 +1,82 @@
+/* Admin Panel Styles */
+.user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: var(--background-light);
+    border-radius: 0.375rem;
+  }
+  
+  .user-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .user-name {
+    font-weight: 500;
+  }
+  
+  .user-role {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+  
+  /* Manager Panel Styles */
+  .team-performance {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .team-item {
+    padding: 0.75rem;
+    background-color: var(--background-light);
+    border-radius: 0.375rem;
+  }
+  
+  .team-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .performance-up {
+    color: var(--success-color);
+  }
+  
+  .performance-down {
+    color: var(--danger-color);
+  }
+  
+  /* Trader Panel Styles */
+  .trade-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .trade-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+  }
+  
+  .trade-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  .trade-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }

@@ -1,0 +1,42 @@
+@import './base.css';
+@import './components/auth.css';
+@import './components/buttons.css';
+@import './components/dashboard.css';
+@import './components/navbar.css';
+@import './components/role-specific.css';
+@import './components/table.css';
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .navbar-container {
+    flex-direction: column;
+    height: auto;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .table-container {
+    margin: 0 -1rem;
+  }
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary-color: #3b82f6;
+    --primary-hover: #60a5fa;
+    --danger-color: #ef4444;
+    --danger-hover: #f87171;
+    --success-color: #22c55e;
+    --success-hover: #34d399;
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --background-light: #1f2937;
+    --background-white: #111827;
+    --border-color: #374151;
+  }
+}

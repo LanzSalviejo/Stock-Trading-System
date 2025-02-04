@@ -1,0 +1,33 @@
+.dashboard-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  @media (min-width: 768px) {
+    .dashboard-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  .card {
+    background: var(--background-white);
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+  }
+  
+  .card-header {
+    margin-bottom: 1rem;
+  }
+  
+  .card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  
+  .value-large {
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
