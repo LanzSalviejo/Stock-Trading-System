@@ -3,6 +3,5 @@
 /.pnp
 .pnp.js
 package-lock.json
-
-
-
+__pycache__/
+venv/
