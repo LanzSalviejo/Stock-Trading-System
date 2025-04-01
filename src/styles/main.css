@@ -5,6 +5,7 @@
 @import './components/navbar.css';
 @import './components/role-specific.css';
 @import './components/table.css';
+@import './components/transactions.css';
 
 /* Media Queries */
 @media (max-width: 768px) {

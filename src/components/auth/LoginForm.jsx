@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Lock, User, ChevronRight } from 'lucide-react';
+import { Lock, User, ChevronRight, UserPlus } from 'lucide-react';
+import { CreateAccountForm } from './CreateAccountForm';
 
 const LoginForm = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showCreateAccount, setShowCreateAccount] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,7 +26,17 @@ const LoginForm = ({ onLogin }) => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('token', data.token);
+        // Store token (if you implement JWT)
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
+        
+        // Store user data including userId
+        localStorage.setItem('userData', JSON.stringify({
+          role: data.role,
+          userId: data.userId
+        }));
+        
         onLogin(data);
       } else {
         setError(data.message || 'Login failed');
@@ -35,6 +47,10 @@ const LoginForm = ({ onLogin }) => {
       setIsLoading(false);
     }
   };
+
+  if (showCreateAccount) {
+    return <CreateAccountForm onBack={() => setShowCreateAccount(false)} />;
+  }
 
   return (
     <div className="login-form">
@@ -74,6 +90,14 @@ const LoginForm = ({ onLogin }) => {
             {!isLoading && <ChevronRight className="h-4 w-4 ml-2" />}
           </button>
         </form>
+        <div className="form-footer">
+          <button 
+            onClick={() => setShowCreateAccount(true)}
+            className="btn btn-link"
+          >
+            Create New Account <UserPlus className="h-4 w-4 ml-1" />
+          </button>
+        </div>
       </div>
     </div>
   );

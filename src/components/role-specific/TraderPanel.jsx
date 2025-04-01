@@ -1,8 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { TransactionPanel } from '../transactions/TransactionPanel';
 
 const TraderPanel = () => {
-    return (
-      <div className="card">
+  const [userId, setUserId] = useState(null);
+  
+  useEffect(() => {
+    // Get userId from login response stored in localStorage
+    const storedData = localStorage.getItem('userData');
+    if (storedData) {
+      try {
+        const userData = JSON.parse(storedData);
+        if (userData && userData.userId) {
+          setUserId(userData.userId);
+        }
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+  }, []);
+  
+  if (!userId) {
+    return <div>Loading user information...</div>;
+  }
+  
+  return (
+    <>
+      <div className="card mb-6">
         <div className="card-header">
           <h2 className="card-title">Quick Trade</h2>
         </div>
@@ -33,7 +56,10 @@ const TraderPanel = () => {
           </div>
         </form>
       </div>
-    );
-  };
+      
+      <TransactionPanel userId={userId} />
+    </>
+  );
+};
   
-  export { TraderPanel };
+export { TraderPanel };
