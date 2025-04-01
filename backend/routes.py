@@ -95,3 +95,73 @@ def create_account():
             return jsonify({"error": str(e), "status": "failure"}), 500
 
     return jsonify({"message": "Method not allowed", "status": "failure"}), 405
+
+def add_transaction():
+    if request.method == 'OPTIONS':
+        response = jsonify({"status": "success"})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'POST')
+        return response
+    
+    if request.method == 'POST':
+        data = request.get_json()
+        if not data:
+            return jsonify({"message": "No data provided", "status": "failure"}), 400
+
+        transactionid = data.get('transactionid')
+        userid = data.get('userid')
+        stocksymbol = data.get('stocksymbol')
+        date = data.get('date')
+        price = data.get('price')
+        quantity = data.get('quantity')
+
+        if not all([transactionid, userid, stocksymbol, date, price, quantity]):
+            return jsonify({"message": "Missing required fields", "status": "failure"}), 400
+
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT INTO transactions (transactionid, userid, stocksymbol, date, price, quantity)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                """,
+                (transactionid, userid, stocksymbol, date, price, quantity)
+            )
+            conn.commit()
+            cur.close()
+            return jsonify({"message": "Transaction added successfully", "status": "success"}), 201
+        except psycopg2.IntegrityError:
+            return jsonify({"message": "Transaction ID already exists", "status": "failure"}), 409
+        except Exception as e:
+            return jsonify({"message": f"Database error: {str(e)}", "status": "failure"}), 500
+
+    return jsonify({"message": "Method not allowed", "status": "failure"}), 405
+
+def get_transactions():
+    userid = request.args.get('userid')
+    if not userid:
+        return jsonify({"message": "User ID is required", "status": "failure"}), 400
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM transactions WHERE userid = %s", (userid,))
+        transactions = cur.fetchall()
+        cur.close()
+        
+        transactions_list = [
+            {
+                "transactionid": t[0],
+                "userid": t[1],
+                "stocksymbol": t[2],
+                "date": str(t[3]),
+                "price": t[4],
+                "quantity": t[5]
+            } for t in transactions
+        ]
+        
+        return jsonify({"transactions": transactions_list, "status": "success"}), 200
+    except Exception as e:
+        return jsonify({"message": f"Database error: {str(e)}", "status": "failure"}), 500
