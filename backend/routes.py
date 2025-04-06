@@ -1,7 +1,10 @@
 from flask import request, jsonify, g
 import psycopg2
-from db import get_db_connection
 from enum import Enum
+
+import getStock
+from db import get_db_connection
+
 
 class Role(Enum):
     admin = 0
@@ -90,7 +93,7 @@ def create_account():
             conn = get_db_connection()
             cur = conn.cursor()
             cur.execute(
-                "INSERT INTO users (username, password_hash, role) VALUES (%s, %s, %s)",
+                "INSERT INTO users (username, password, role) VALUES (%s, %s, %s)",
                 (username, password, user_role)
             )
             conn.commit()
@@ -172,4 +175,22 @@ def get_transactions():
         return jsonify({"transactions": transactions_list, "status": "success"}), 200
     except Exception as e:
         return jsonify({"message": f"Database error: {str(e)}", "status": "failure"}), 500
+
+def get_popular_stocks():
+    return(jsonify(getStock.get_popularStocks))
+
+def get_stock():
+    data = request.get_json()
+    if not data:
+        return jsonify({"message":"No stock provided", "status":"failure"}), 400
+    symbol = data.get("symbol")
+    
+    # Period and Interval Values
+    # See enum in getStock.py for enum mappings.
+    #       Valid periods: DEFAULT, ONE_DAY, FIVE_DAYS, ONE_MONTH, THREE_MONTHS, SIX_MONTHS, ONE_YEAR, TWO_YEARS, FIVE_YEARS, TEN_YEARS, YEAR_TO_DATE, MAX
+    #       Valid intervals: DEFAULT, ONE_MINUTE, TWO_MINUTES, FIVE_MINUTES, FIFTEEN_MINUTES, THIRTY_MINUTES, SIXTY_MINUTES, NINETY_MINUTES, ONE_HOUR, ONE_DAY, FIVE_DAY, ONE_WEEK, ONE_MONTH, THREE_MONTHS
+    
+    period = data.get("period")         
+    interval = data.get("interval")     
+    return jsonify(getStock.getBy_PeriodInterval(symbol, period, interval))
 
