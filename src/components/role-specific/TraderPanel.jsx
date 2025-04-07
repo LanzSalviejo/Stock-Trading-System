@@ -1,24 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { TransactionPanel } from '../transactions/TransactionPanel';
 
-const TraderPanel = () => {
-  const [userId, setUserId] = useState(null);
-  
-  useEffect(() => {
-    // Get userId from login response stored in localStorage
-    const storedData = localStorage.getItem('userData');
-    if (storedData) {
-      try {
-        const userData = JSON.parse(storedData);
-        if (userData && userData.userId) {
-          setUserId(userData.userId);
-        }
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-      }
-    }
-  }, []);
-  
+const TraderPanel = ({ userId }) => {
   if (!userId) {
     return <div>Loading user information...</div>;
   }

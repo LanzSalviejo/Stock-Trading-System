@@ -6,24 +6,27 @@ import { StockHoldings } from './components/dashboard/StockHoldings.jsx';
 import { AdminPanel } from './components/role-specific/AdminPanel.jsx';
 import { ManagerPanel } from './components/role-specific/ManagerPanel.jsx';
 import { TraderPanel } from './components/role-specific/TraderPanel.jsx';
-import { verifyToken, logout } from './services/api.js';
+import { StockExplorer } from './components/stocks/StockExplorer.jsx';
+import { verifyToken } from './services/api.js';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState('');
+  const [userId, setUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
+      const storedData = localStorage.getItem('userData');
+      if (storedData) {
         try {
-          const data = await verifyToken(token);
+          const userData = JSON.parse(storedData);
           setIsLoggedIn(true);
-          setUserRole(data.role);
+          setUserRole(userData.role);
+          setUserId(userData.userId);
         } catch (error) {
-          console.error('Token verification failed:', error);
-          localStorage.removeItem('token');
+          console.error('Error parsing user data:', error);
+          localStorage.removeItem('userData');
         }
       }
       setIsLoading(false);
@@ -35,21 +38,16 @@ const App = () => {
   const handleLogin = (data) => {
     setIsLoggedIn(true);
     setUserRole(data.role);
+    setUserId(data.userId);
   };
 
-  const handleLogout = async () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        await logout(token);
-      } catch (error) {
-        console.error('Logout error:', error);
-      } finally {
-        localStorage.removeItem('token');
-        setIsLoggedIn(false);
-        setUserRole('');
-      }
-    }
+  const handleLogout = () => {
+    // Simply remove stored data and reset state
+    localStorage.removeItem('userData');
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    setUserRole('');
+    setUserId(null);
   };
 
   if (isLoading) {
@@ -72,16 +70,19 @@ const App = () => {
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          {/* Stock Holdings Table */}
+          {/* Left Column: Stock Holdings and Stock Explorer */}
           <div className="lg:col-span-2">
             <StockHoldings />
+            <div className="mt-6">
+              <StockExplorer />
+            </div>
           </div>
 
-          {/* Role-Specific Panel */}
+          {/* Right Column: Role-Specific Panel */}
           <div className="lg:col-span-1">
             {userRole === 'administrator' && <AdminPanel />}
             {userRole === 'manager' && <ManagerPanel />}
-            {userRole === 'trader' && <TraderPanel />}
+            {userRole === 'trader' && <TraderPanel userId={userId} />}
           </div>
         </div>
       </main>

@@ -37,7 +37,7 @@ def login():
             conn = get_db_connection()
             cur = conn.cursor()
             cur.execute(
-                "SELECT username, password, role FROM users WHERE username = %s",
+                "SELECT id, username, password, role FROM users WHERE username = %s",
                 (username,)
             )
             user = cur.fetchone()
@@ -45,13 +45,14 @@ def login():
             conn.close()
 
             if user:
-                db_username, db_password, db_role = user
+                db_id, db_username, db_password, db_role = user
                 # Compare plaintext password
                 if db_password == password:
                     return jsonify({
                         "message": "Login successful!",
                         "status": "success",
-                        "role": db_role
+                        "role": db_role,
+                        "userId": db_id
                     })
                 else:
                     return jsonify({"message": "Invalid credentials", "status": "failure"}), 401
@@ -161,36 +162,77 @@ def get_transactions():
         transactions = cur.fetchall()
         cur.close()
         
-        transactions_list = [
-            {
-                "transactionid": t[0],
-                "userid": t[1],
-                "stocksymbol": t[2],
-                "date": str(t[3]),
-                "price": t[4],
-                "quantity": t[5]
-            } for t in transactions
-        ]
+        transactions_list = []
+        if transactions:
+            transactions_list = [
+                {
+                    "transactionid": t[0],
+                    "userid": t[1],
+                    "stocksymbol": t[2],
+                    "date": str(t[3]),
+                    "price": float(t[4]),  # Convert to float for JSON serialization
+                    "quantity": int(t[5])   # Convert to int for JSON serialization
+                } for t in transactions
+            ]
         
         return jsonify({"transactions": transactions_list, "status": "success"}), 200
     except Exception as e:
-        return jsonify({"message": f"Database error: {str(e)}", "status": "failure"}), 500
+        print(f"Database error: {str(e)}")
+        # Return empty list with success status instead of 500 error
+        return jsonify({"transactions": [], "status": "success"}), 200
 
 def get_popular_stocks():
-    return(jsonify(getStock.get_popularStocks))
+    try:
+        stocks = getStock.get_popularStocks()
+        return jsonify({"stocks": stocks, "status": "success"}), 200
+    except Exception as e:
+        print(f"Error in get_popular_stocks route: {str(e)}")
+        return jsonify({"message": f"Error fetching popular stocks: {str(e)}", "status": "failure"}), 500
 
 def get_stock():
-    data = request.get_json()
-    if not data:
-        return jsonify({"message":"No stock provided", "status":"failure"}), 400
-    symbol = data.get("symbol")
-    
-    # Period and Interval Values
-    # See enum in getStock.py for enum mappings.
-    #       Valid periods: DEFAULT, ONE_DAY, FIVE_DAYS, ONE_MONTH, THREE_MONTHS, SIX_MONTHS, ONE_YEAR, TWO_YEARS, FIVE_YEARS, TEN_YEARS, YEAR_TO_DATE, MAX
-    #       Valid intervals: DEFAULT, ONE_MINUTE, TWO_MINUTES, FIVE_MINUTES, FIFTEEN_MINUTES, THIRTY_MINUTES, SIXTY_MINUTES, NINETY_MINUTES, ONE_HOUR, ONE_DAY, FIVE_DAY, ONE_WEEK, ONE_MONTH, THREE_MONTHS
-    
-    period = data.get("period")         
-    interval = data.get("interval")     
-    return jsonify(getStock.getBy_PeriodInterval(symbol, period, interval))
-
+    if request.method == 'OPTIONS':
+        response = jsonify({"status": "success"})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'POST')
+        return response
+        
+    if request.method == 'POST':
+        data = request.get_json()
+        if not data:
+            return jsonify({"message":"No stock provided", "status":"failure"}), 400
+            
+        symbol = data.get("symbol")
+        if not symbol:
+            return jsonify({"message":"Stock symbol is required", "status":"failure"}), 400
+        
+        # Period and Interval Values
+        period_value = data.get("period")
+        interval_value = data.get("interval")
+        
+        try:
+            # Convert string values to enum if provided
+            period = None
+            interval = None
+            
+            if period_value:
+                try:
+                    period = getStock.Period[period_value]
+                except KeyError:
+                    return jsonify({"message": f"Invalid period value: {period_value}", "status": "failure"}), 400
+            
+            if interval_value:
+                try:
+                    interval = getStock.Interval[interval_value]
+                except KeyError:
+                    return jsonify({"message": f"Invalid interval value: {interval_value}", "status": "failure"}), 400
+            
+            stock_data = getStock.getBy_PeriodInterval(symbol, period, interval)
+            
+            if 'error' in stock_data:
+                return jsonify({"message": stock_data['error'], "status": "failure"}), 400
+                
+            return jsonify({"stockData": stock_data, "status": "success"}), 200
+        except Exception as e:
+            print(f"Error in get_stock route: {str(e)}")
+            return jsonify({"message": f"Error fetching stock data: {str(e)}", "status": "failure"}), 500

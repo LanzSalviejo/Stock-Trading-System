@@ -6,6 +6,7 @@
 @import './components/role-specific.css';
 @import './components/table.css';
 @import './components/transactions.css';
+@import './components/stocks.css';
 
 /* Media Queries */
 @media (max-width: 768px) {
@@ -22,6 +23,10 @@
 
   .table-container {
     margin: 0 -1rem;
+  }
+  
+  .popular-stocks-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
